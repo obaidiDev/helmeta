@@ -60,7 +60,7 @@ const IndoorMap = ({ workers, riskAssessments }) => {
 
         {/* Overlay your custom floor plan image */}
         <ImageOverlay
-          url="public/Floor-Plan.jpg" // Replace with the path to your floor plan image
+          url="/Floor-Plan.jpg" // Replace with the path to your floor plan image
           bounds={bounds}
         />
 

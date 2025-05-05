@@ -5,7 +5,7 @@ const AlertCard = ({ alert }) => {
   return (
     <div className="flex items-start border-l-4 border-red-600 bg-white p-2 mb-2 shadow-sm">
       <img
-        src="public/alert.png"
+        src="/alert.png"
         alt="Alert Icon"
         className="w-6 h-6 mr-4 my-auto"
       />

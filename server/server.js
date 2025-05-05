@@ -51,9 +51,9 @@ app.use(express.json());
 
 // --- Mock Data ---
 let workers = [
-  { id: "022", name: "Mohammed Ali", riskLevel: "high", image: "public/person.png" },
-  { id: "014", name: "Aisha Khan", riskLevel: "mid", image: "public/person.png" },
-  { id: "013", name: "David Smith", riskLevel: "low", image: "public/person.png" },
+  { id: "022", name: "Mohammed Ali", riskLevel: "high", image: "/person.png" },
+  { id: "014", name: "Aisha Khan", riskLevel: "mid", image: "/person.png" },
+  { id: "013", name: "David Smith", riskLevel: "low", image: "/person.png" },
 ];
 
 let alerts = [
