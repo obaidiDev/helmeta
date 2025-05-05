@@ -66,14 +66,16 @@ const LiveEnvironment = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
-      <iframe
+      {/* <iframe
         src="http://192.168.192.155"
         title="Camera Stream"
         className={`
           w-full h-full transition-opacity duration-300
           ${useCamera ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
         `}
-      />
+      /> */}
+      <img src="/cam" alt="Camera Stream"/>
+
       {/* Toggle */}
       <div className="absolute top-4 left-4 z-20">
         <label className="flex items-center cursor-pointer">

@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-// const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');  // <-- add this clearly
 const { Server } = require('socket.io');
 const WebSocket = require('ws');
@@ -45,6 +45,11 @@ const io = new Server(server, {
 //     }
 //   })
 // );
+app.use('/cam', createProxyMiddleware({
+  target: 'http://192.168.192.155', // your ESP32 camera IP
+  changeOrigin: true,
+  pathRewrite: { '^/cam': '/stream' }
+}));
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(cors({ origin: "*" }));
 app.use(express.json());
