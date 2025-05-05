@@ -2,7 +2,8 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+// const { createProxyMiddleware } = require('http-proxy-middleware');
+const path = require('path');  // <-- add this clearly
 const { Server } = require('socket.io');
 const WebSocket = require('ws');
 // const Stream = require('node-rtsp-stream');
