@@ -38,7 +38,7 @@ const LiveEnvironment = () => {
   // Initial fetch
   useEffect(() => {
     if (workerId && !environmentData) {
-      fetch(`http://localhost:3000/api/environment/${workerId}`)
+      fetch(`/api/environment/${workerId}`)
         .then(r => r.json())
         .then(setEnvironmentData);
     }

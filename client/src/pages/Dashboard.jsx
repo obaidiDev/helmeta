@@ -19,25 +19,25 @@ const Dashboard = () => {
 
   // Initial data fetch from the backend endpoints
   useEffect(() => {
-    fetch('http://localhost:3000/api/workers')
+    fetch('/api/workers')
       .then((res) => res.json())
       .then((data) => setWorkers(data));
 
-    fetch('http://localhost:3000/api/alerts')
+    fetch('/api/alerts')
       .then((res) => res.json())
       .then((data) => setAlerts(data));
 
-    fetch('http://localhost:3000/api/risk-assessments')
+    fetch('/api/risk-assessments')
       .then((res) => res.json())
       .then((data) => setRiskAssessments(data));
 
-    fetch('http://localhost:3000/api/prediction-analysis')
+    fetch('/api/prediction-analysis')
       .then((res) => res.json())
       .then((data) => setPredictionAnalysis(data));
   }, []);
 
   useEffect(() => {
-    const socket = io('http://localhost:3000');
+    const socket = io('');
   
     socket.on('workersUpdate', setWorkers);
     socket.on('alertsUpdate', setAlerts);
