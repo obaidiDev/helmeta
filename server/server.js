@@ -175,7 +175,7 @@ io.on('connection', (socket) => {
 });
 
 // --- Separate WebSocket Server for ESP32 (raw ws) ---
-const wss = new WebSocket.Server({ port: ESP32_WS_PORT });
+const wss = new WebSocket.Server({ server, path: '/esp32' });
 
 wss.on('connection', (ws) => {
   console.log('✅ ESP32 connected via raw WebSocket');
