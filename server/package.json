@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "npm start --prefix server",
+    "dev": "nodemon server.js",
+    "install": "npm install --prefix server && npm install --prefix client && npm run build --prefix client"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5",
+    "node-rtsp-stream": "^0.0.9",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
