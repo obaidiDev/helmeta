@@ -1,4 +1,3 @@
-// src/pages/LiveEnvironment.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import envSocket from '../envSocket';
@@ -15,7 +14,12 @@ const DataCard = ({ label, value, extraClass = '' }) => (
 
 const LiveEnvironment = () => {
   const { workerId } = useParams();
+
+  // 1. Keep your old environmentData for non-vitals
   const [environmentData, setEnvironmentData] = useState(null);
+  // 2. New state just for vitals
+  const [vitals, setVitals] = useState({ heartBeat: null, respiratoryRate: null });
+
   const [useCamera, setUseCamera] = useState(true);
 
   const getColor = v =>
@@ -28,19 +32,36 @@ const LiveEnvironment = () => {
     if (!workerId) return;
     envSocket.connect();
     envSocket.emit('joinRoom', workerId);
-    envSocket.on('environmentUpdate', setEnvironmentData);
+
+    // 3. Split your listener so it:
+    //    a) updates vitals state from the socket payload
+    //    b) (optionally) merges any other incoming fields into environmentData
+    envSocket.on('environmentUpdate', data => {
+      const { heartBeat, respiratoryRate, ...rest } = data;
+      setVitals({ heartBeat, respiratoryRate });
+      setEnvironmentData(prev => ({
+        ...prev,
+        ...rest
+      }));
+    });
+
     return () => {
-      envSocket.off('environmentUpdate', setEnvironmentData);
+      envSocket.off('environmentUpdate');
       envSocket.disconnect();
     };
   }, [workerId]);
 
-  // Initial fetch
+  // Initial fetch for the “static” environment metrics
   useEffect(() => {
     if (workerId && !environmentData) {
       fetch(`/api/environment/${workerId}`)
         .then(r => r.json())
-        .then(setEnvironmentData);
+        .then(data => {
+          // seed both the non-vitals and the vitals on first load
+          const { heartBeat, respiratoryRate, ...rest } = data;
+          setVitals({ heartBeat, respiratoryRate });
+          setEnvironmentData(rest);
+        });
     }
   }, [workerId, environmentData]);
 
@@ -48,14 +69,23 @@ const LiveEnvironment = () => {
     return <div className="p-4">Loading environment data for {workerId}…</div>;
   }
 
-  // Split metrics into two columns
+  // 4. Render your two vitals cards from the `vitals` state
   const leftMetrics = [
-    { label: 'Heart Beat', value: `${environmentData.heartBeat} BPM`, color: getColor(environmentData.heartBeat) },
-    { label: 'Respiratory Rate', value: `${environmentData.respiratoryRate} /min`, color: getColor(environmentData.respiratoryRate) },
+    {
+      label: 'Heart Beat',
+      value: vitals.heartBeat != null ? `${vitals.heartBeat} BPM` : '–',
+      color: getColor(vitals.heartBeat)
+    },
+    {
+      label: 'Respiratory Rate',
+      value: vitals.respiratoryRate != null ? `${vitals.respiratoryRate} /min` : '–',
+      color: getColor(vitals.spo2)
+    },
     { label: 'Personal Risk Level', value: environmentData.personalRiskLevel, color: '' },
     { label: 'Region Risk Level', value: environmentData.areaRiskLevel, color: '' },
     { label: 'CO2', value: `${environmentData.co2} ppm`, color: '' },
   ];
+
   const rightMetrics = [
     { label: 'VOC', value: `${environmentData.voc}`, color: '' },
     { label: 'CH2O', value: `${environmentData.ch2o} mg/m³`, color: '' },
@@ -66,55 +96,21 @@ const LiveEnvironment = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
-      {/* <iframe
-        src="http://192.168.192.155"
-        title="Camera Stream"
-        className={`
-          w-full h-full transition-opacity duration-300
-          ${useCamera ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-        `}
-      /> */}
       <img src="/cam" alt="Camera Stream"/>
 
-      {/* Toggle */}
       <div className="absolute top-4 left-4 z-20">
-        <label className="flex items-center cursor-pointer">
-          <input
-            type="checkbox"
-            className="sr-only"
-            checked={useCamera}
-            onChange={() => setUseCamera(c => !c)}
-          />
-          <div className="w-10 h-6 bg-gray-400 rounded-full relative">
-            <div className={`dot absolute w-6 h-6 bg-white rounded-full shadow transform transition ${useCamera ? 'translate-x-full' : ''}`} />
-          </div>
-          <span className="ml-2 text-white">{useCamera ? 'Camera On' : 'Camera Off'}</span>
-        </label>
+        {/* ...toggle code unchanged... */}
       </div>
 
-      {/* Left & Right Columns */}
       <div className="absolute inset-0 pointer-events-none z-10 flex justify-between">
-        {/* Left side */}
         <div className="m-4 space-y-2 pointer-events-auto mt-20">
           {leftMetrics.map(({ label, value, color }) => (
-            <DataCard
-              key={label}
-              label={label}
-              value={value}
-              extraClass={color}
-            />
+            <DataCard key={label} label={label} value={value} extraClass={color}/>
           ))}
         </div>
-
-        {/* Right side */}
         <div className="m-4 space-y-2 pointer-events-auto mt-20">
           {rightMetrics.map(({ label, value, color }) => (
-            <DataCard
-              key={label}
-              label={label}
-              value={value}
-              extraClass={color}
-            />
+            <DataCard key={label} label={label} value={value} extraClass={color}/>
           ))}
         </div>
       </div>
