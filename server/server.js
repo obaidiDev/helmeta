@@ -45,11 +45,11 @@ const io = new Server(server, {
 //     }
 //   })
 // );
-app.use('/cam', createProxyMiddleware({
-  target: 'http://192.168.192.155', // your ESP32 camera IP
-  changeOrigin: true,
-  pathRewrite: { '^/cam': '/stream' }
-}));
+// app.use('/cam', createProxyMiddleware({
+//   target: 'http://192.168.192.155', // your ESP32 camera IP
+//   changeOrigin: true,
+//   pathRewrite: { '^/cam': '/stream' }
+// }));
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(cors({ origin: "*" }));
 app.use(express.json());
@@ -71,10 +71,10 @@ let riskAssessments = [
   { name: "Worker B", region: "Region 3", riskDescription: "Temperature too high.", riskLevel: "mid" },
 ];
 
-let predictionAnalysis = [
-  { targetName: "Worker 022", description: "Likely to experience heat fatigue.", severity: "high" },
-  { targetName: "Region 1", description: "Risk of slip due to moisture.", severity: "mid" },
-];
+// let predictionAnalysis = [
+//   { targetName: "Worker 022", description: "Likely to experience heat fatigue.", severity: "high" },
+//   { targetName: "Region 1", description: "Risk of slip due to moisture.", severity: "mid" },
+// ];
 
 const defaultEnv = {
   heartBeat: 80,
@@ -99,7 +99,7 @@ let environmentDataByWorker = {
 app.get('/api/workers', (req, res) => res.json(workers));
 app.get('/api/alerts', (req, res) => res.json(alerts));
 app.get('/api/risk-assessments', (req, res) => res.json(riskAssessments));
-app.get('/api/prediction-analysis', (req, res) => res.json(predictionAnalysis));
+// app.get('/api/prediction-analysis', (req, res) => res.json(predictionAnalysis));
 
 app.get('/api/environment/:workerId', (req, res) => {
   const { workerId } = req.params;
@@ -151,17 +151,36 @@ app.post('/api/update-risk-assessments', (req, res) => {
 });
 
 
-app.post('/api/update-prediction-analysis', (req, res) => {
-  req.body.forEach(newItem => {
-    const index = predictionAnalysis.findIndex(p =>
-      p.targetName === newItem.targetName
-    );
-    if (index !== -1) predictionAnalysis[index] = newItem;
-    else predictionAnalysis.push(newItem);
-  });
-  io.emit('predictionAnalysisUpdate', predictionAnalysis);
-  res.status(200).json({ message: "Prediction analysis updated." });
+// app.post('/api/update-prediction-analysis', (req, res) => {
+//   req.body.forEach(newItem => {
+//     const index = predictionAnalysis.findIndex(p =>
+//       p.targetName === newItem.targetName
+//     );
+//     if (index !== -1) predictionAnalysis[index] = newItem;
+//     else predictionAnalysis.push(newItem);
+//   });
+//   io.emit('predictionAnalysisUpdate', predictionAnalysis);
+//   res.status(200).json({ message: "Prediction analysis updated." });
+// });
+
+app.post('/api/vitals', (req, res) => {
+  const { workerId, heartBeat, spo2 } = req.body;
+  if (!workerId) return res.status(400).json({ error: 'workerId required' });
+
+  const existing = environmentDataByWorker[workerId] || { ...defaultEnv };
+  environmentDataByWorker[workerId] = {
+    ...existing,
+    heartBeat,
+    respiratoryRate: spo2
+  };
+
+  // Broadcast to any clients in this worker's room
+  io.to(workerId).emit('environmentUpdate', environmentDataByWorker[workerId]);
+  console.log(`📡 Vitals updated for ${workerId}:`, environmentDataByWorker[workerId]);
+
+  res.status(200).json({ message: 'Vitals updated.' });
 });
+
 
 
 // --- Socket.IO for browser clients ---
@@ -180,7 +199,9 @@ io.on('connection', (socket) => {
 });
 
 // --- Separate WebSocket Server for ESP32 (raw ws) ---
-const wss = new WebSocket.Server({ server, path: '/esp32' });
+// const wss = new WebSocket.Server({ server, path: '/esp32' });
+const wss = new WebSocket.Server({ port: ESP32_WS_PORT });
+
 
 wss.on('connection', (ws) => {
   console.log('✅ ESP32 connected via raw WebSocket');

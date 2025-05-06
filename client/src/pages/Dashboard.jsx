@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import SearchBar from '../components/SearchBar';
 import FilterBar from '../components/FilterBar';
 import WorkerList from '../components/WorkerList';
-import PredictionAnalysisContainer from '../components/PredictionAnalysisContainer';
+// import PredictionAnalysisContainer from '../components/PredictionAnalysisContainer';
 import AlertsContainer from '../components/AlertsContainer';
 import RiskAssessmentContainer from '../components/RiskAssessmentContainer';
 import IndoorMap from '../components/IndoorMap';
@@ -31,9 +31,9 @@ const Dashboard = () => {
       .then((res) => res.json())
       .then((data) => setRiskAssessments(data));
 
-    fetch('/api/prediction-analysis')
-      .then((res) => res.json())
-      .then((data) => setPredictionAnalysis(data));
+    // fetch('/api/prediction-analysis')
+    //   .then((res) => res.json())
+    //   .then((data) => setPredictionAnalysis(data));
   }, []);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const Dashboard = () => {
     socket.on('workersUpdate', setWorkers);
     socket.on('alertsUpdate', setAlerts);
     socket.on('riskAssessmentsUpdate', setRiskAssessments);
-    socket.on('predictionAnalysisUpdate', setPredictionAnalysis);
+    // socket.on('predictionAnalysisUpdate', setPredictionAnalysis);
   
     return () => socket.disconnect();
   }, []);
@@ -52,7 +52,7 @@ const Dashboard = () => {
   const showAlerts = selectedFilters.length === 0 || selectedFilters.includes('alerts');
   const showWorkers = selectedFilters.length === 0 || selectedFilters.includes('workers');
   const showRisk = selectedFilters.length === 0 || selectedFilters.includes('risk');
-  const showPrediction = selectedFilters.length === 0 || selectedFilters.includes('prediction');
+  // const showPrediction = selectedFilters.length === 0 || selectedFilters.includes('prediction');
 
   // Filter each section based on the search query:
   const filteredAlerts = alerts.filter((alert) =>
@@ -67,10 +67,10 @@ const Dashboard = () => {
     risk.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
     risk.riskDescription.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const filteredPrediction = predictionAnalysis.filter((pa) =>
-    pa.targetName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pa.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredPrediction = predictionAnalysis.filter((pa) =>
+  //   pa.targetName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   pa.description.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
 
   return (
     <div className="w-screen min-h-screen bg-gray-100 px-14 py-10">
@@ -99,11 +99,11 @@ const Dashboard = () => {
         )}
       </div>
       {/* Prediction Analysis */}
-      {showPrediction && (
+      {/* {showPrediction && (
         <div className="mt-4">
           <PredictionAnalysisContainer predictionAnalysis={filteredPrediction} />
         </div>
-      )}
+      )} */}
     </div>
   );
 };
