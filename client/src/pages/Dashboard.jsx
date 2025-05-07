@@ -67,6 +67,14 @@ const Dashboard = () => {
     risk.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
     risk.riskDescription.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleRemoveAlert = alertToRemove => {
+    setAlerts(prev => 
+      prev.filter(a =>
+        !(a.title === alertToRemove.title && a.description === alertToRemove.description)
+       )
+    );
+  };
   // const filteredPrediction = predictionAnalysis.filter((pa) =>
   //   pa.targetName.toLowerCase().includes(searchQuery.toLowerCase()) ||
   //   pa.description.toLowerCase().includes(searchQuery.toLowerCase())
@@ -89,7 +97,8 @@ const Dashboard = () => {
       <div className="grid grid-cols-5 gap-4 h-96">
         {/* Alerts */}
         {showAlerts && (
-          <AlertsContainer alerts={filteredAlerts} />
+          <AlertsContainer alerts={filteredAlerts} 
+          onRemoveAlert={handleRemoveAlert}/>
         )}
         {/* Indoor map */}
         <IndoorMap workers={filteredWorkers} riskAssessments={filteredRisk} />

@@ -5,7 +5,7 @@ const filters = [
   { label: 'Alerts', value: 'alerts' },
   { label: 'Risk Assessments', value: 'risk' },
   { label: 'Worker List', value: 'workers' },
-  { label: 'Prediction Analysis', value: 'prediction' },
+  // { label: 'Prediction Analysis', value: 'prediction' },
 ];
 
 const FilterBar = ({ selectedFilters, setSelectedFilters }) => {
