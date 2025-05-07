@@ -16,8 +16,8 @@ const DataCard = ({ label, value, extraClass = '' }) => (
 const LiveEnvironment = () => {
   const { workerId } = useParams();
   const [environmentData, setEnvironmentData] = useState(null);
-  const [vitals, setVitals] = useState({ heartBeat: null, respiratoryRate: null });
-  const [useCamera, setUseCamera] = useState(true);
+  const [vitals, setVitals] = useState({ heartRate: null, spo2: null });
+  const [useCameraBackground, setUseCameraBackground] = useState(true);
 
   // generic color helper per metric
   const getCardColor = (label, raw) => {
@@ -87,8 +87,8 @@ const LiveEnvironment = () => {
     envSocket.emit('joinRoom', workerId);
 
     envSocket.on('environmentUpdate', data => {
-      const { heartBeat, respiratoryRate, ...rest } = data;
-      setVitals({ heartBeat, respiratoryRate });
+      const { heartRate, spo2, ...rest } = data;
+      setVitals({ heartRate, spo2 });
       setEnvironmentData(prev => ({ ...prev, ...rest }));
     });
 
@@ -104,12 +104,16 @@ const LiveEnvironment = () => {
       fetch(`/api/environment/${workerId}`)
         .then(r => r.json())
         .then(data => {
-          const { heartBeat, respiratoryRate, ...rest } = data;
-          setVitals({ heartBeat, respiratoryRate });
+          const { heartRate, spo2, ...rest } = data;
+          setVitals({ heartRate, spo2 });
           setEnvironmentData(rest);
         });
     }
   }, [workerId, environmentData]);
+
+  const toggleBackground = () => {
+    setUseCameraBackground(prev => !prev);
+  };
 
   if (!environmentData) {
     return <div className="p-4">Loading environment data for {workerId}…</div>;
@@ -124,17 +128,17 @@ const LiveEnvironment = () => {
     },
     {
       label: 'Heart Beat',
-      value: vitals.heartBeat != null ? `${vitals.heartBeat} BPM` : '–',
-      color: getCardColor('Heart Beat', vitals.heartBeat)
+      value: vitals.heartRate != null ? `${vitals.heartRate} BPM` : '–',
+      color: getCardColor('Heart Beat', vitals.heartRate)
     },
     {
       label: 'Respiratory Rate',
-      value: vitals.respiratoryRate != null ? `${vitals.respiratoryRate} /min` : '–',
-      color: getCardColor('Respiratory Rate', vitals.respiratoryRate)
+      value: vitals.spo2 != null ? `${vitals.spo2} %` : '–',
+      color: getCardColor('SpO2', vitals.spo2)
     },
     {
       label: 'Speed',
-      value: environmentData.speed,
+      value: environmentData.speed != null ? `${environmentData.speed} %` : '–',
       color: getCardColor('Speed', environmentData.speed)
     },
     {

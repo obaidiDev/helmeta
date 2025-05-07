@@ -50,14 +50,15 @@ app.use(express.json());
 
 // --- Mock Data ---
 let workers = [
-  { id: "022", name: "Mohammed Ali", riskLevel: "high", image: "/person.png" },
-  { id: "014", name: "Aisha Khan", riskLevel: "mid", image: "/person.png" },
-  { id: "013", name: "David Smith", riskLevel: "low", image: "/person.png" },
+  { id: "001", name: "Hashem Alsayed", riskLevel: "high", image: "/person.png" },
+  { id: "002", name: "Malek Alrodwan", riskLevel: "mid", image: "/person.png" },
+  { id: "003", name: "Ali Alyamy", riskLevel: "low", image: "/person.png" },
+  { id: "004", name: "Mohammed Alsakka", riskLevel: "high", image: "/person.png" },
+  { id: "005", name: "Meshal Alsalhi", riskLevel: "mid", image: "/person.png" },
 ];
 
 let alerts = [
   { title: "High O2 Detected", description: "O2 level above normal thresholds", icon: "https://via.placeholder.com/24/FF0000/FFFFFF?text=!" },
-  { title: "Fall Detected!", description: "A worker has fallen in Region 3", icon: "https://via.placeholder.com/24/FF0000/FFFFFF?text=!" },
 ];
 
 let riskAssessments = [
@@ -71,8 +72,8 @@ let predictionAnalysis = [
 ];
 
 const defaultEnv = {
-  heartBeat: 80,
-  respiratoryRate: 16,
+  heartRate: 80,
+  spo2: 16,
   personalRiskLevel: "high",
   areaRiskLevel: "medium",
   CO2: 400,            // Parts per million (example)
@@ -84,9 +85,11 @@ const defaultEnv = {
 };
 
 let environmentDataByWorker = {
-  "022": { ...defaultEnv },
-  "014": { ...defaultEnv, heartBeat: 70 },
-  "013": { ...defaultEnv, heartBeat: 90 },
+  "001": { ...defaultEnv },
+  "002": { ...defaultEnv, heartRate: 70 },
+  "003": { ...defaultEnv, heartRate: 90 },
+  "004": { ...defaultEnv, heartRate: 70 },
+  "005": { ...defaultEnv, heartRate: 90 },
 };
 
 // --- Express API Endpoints ---
@@ -171,14 +174,14 @@ app.post('/api/update-prediction-analysis', (req, res) => {
 });
 
 app.post('/api/vitals', (req, res) => {
-  const { workerId, heartBeat, spo2 } = req.body;
+  const { workerId, heartRate, spo2 } = req.body;
   if (!workerId) return res.status(400).json({ error: 'workerId required' });
 
   const existing = environmentDataByWorker[workerId] || { ...defaultEnv };
   environmentDataByWorker[workerId] = {
     ...existing,
-    heartBeat,
-    respiratoryRate: spo2
+    heartRate,
+    spo2: spo2
   };
 
   // Broadcast to any clients in this worker's room
@@ -242,6 +245,33 @@ wss.on('connection', (ws) => {
     console.log('❌ ESP32 disconnected');
   });
 });
+
+// --- Separate WebSocket Server for UWB tag (raw ws) ---
+const wssUwb = new WebSocket.Server({ server, path: '/uwb' });
+
+wssUwb.on('connection', ws => {
+  console.log('✅ UWB tag connected via raw WebSocket (/uwb)');
+
+  ws.on('message', (message) => {
+    const msgStr = message.toString();
+    console.log('📨 Data from UWB tag:', msgStr);
+
+    try {
+      const data = JSON.parse(msgStr);
+      // data should be: { id, name, riskLevel, position: { x, y } }
+
+      // Broadcast out to your IndoorMap clients
+      io.emit('positionUpdate', data);
+    } catch (err) {
+      console.error('❌ Invalid JSON on /uwb:', msgStr);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('❌ UWB tag disconnected from /uwb');
+  });
+});
+
 
 // // --- Separate WebSocket Server for DW1000 (raw ws) ---
 // const dwwss = new WebSocket.Server({ port: DW1000_WS_PORT });
