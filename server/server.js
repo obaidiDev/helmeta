@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-// const { createProxyMiddleware } = require('http-proxy-middleware');
+const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');  // <-- add this clearly
 const { Server } = require('socket.io');
 const WebSocket = require('ws');
@@ -45,7 +45,6 @@ const io = new Server(server, {
 //     }
 //   })
 // );
-app.use(express.static(path.join(__dirname, '../client/dist')));
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
@@ -176,7 +175,16 @@ app.post('/api/vitals', (req, res) => {
   res.status(200).json({ message: 'Vitals updated.' });
 });
 
-
+app.use('/cam', createProxyMiddleware({
+  target: 'http://192.168.192.155',
+  changeOrigin: true,
+  secure: false,
+  ws: true
+}));
+app.use(express.static(path.join(__dirname, '../client/dist')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+});
 // --- Socket.IO for browser clients ---
 io.on('connection', (socket) => {
   console.log(`New client connected: ${socket.id}`);
@@ -252,7 +260,7 @@ server.listen(PORT, () => {
 });
 
 // Start raw WebSocket server for ESP32 separately
-console.log(`🔌 ESP32 WebSocket server running on port ${ESP32_WS_PORT}`);
+console.log(`🔌 ESP32 WebSocket server running on port ${PORT}`);
 // Replace with your ESP32’s RTSP URL
 
 // const wssCam = new WebSocket.Server({server, path: '/camera-socket' });

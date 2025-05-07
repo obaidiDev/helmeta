@@ -174,10 +174,36 @@ const LiveEnvironment = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
-      <img src="/cam" alt="Camera Stream"/>
-
-      <div className="absolute top-4 left-4 z-20">
-        {/* toggle code unchanged… */}
+        {<iframe
+         src="/cam"
+         title="Camera Stream"
+         className={`
+           w-full h-full transition-opacity duration-300
+           ${useCameraBackground ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+         `}/>}
+  
+      {/* Toggle Switch */}
+      <div className="p-4">
+        <label htmlFor="toggleCamera" className="flex items-center cursor-pointer">
+          <div className="relative">
+            <input
+              id="toggleCamera"
+              type="checkbox"
+              className="sr-only"
+              onChange={toggleBackground}
+              checked={useCameraBackground}
+            />
+            <div className="w-10 h-6 bg-gray-400 rounded-full shadow-inner">
+              <div
+                className="dot absolute w-6 h-6 bg-white rounded-full shadow transform transition-transform duration-200"
+                style={{ transform: useCameraBackground ? 'translateX(100%)' : 'translateX(0)' }}
+              ></div>
+            </div>
+          </div>
+          <span className="ml-3 text-gray-700 font-medium">
+            {useCameraBackground ? "Camera On" : "Camera Off"}
+          </span>
+        </label>
       </div>
 
       <div className="absolute inset-0 pointer-events-none z-10 flex justify-between">
