@@ -175,12 +175,15 @@ app.post('/api/vitals', (req, res) => {
   res.status(200).json({ message: 'Vitals updated.' });
 });
 
-app.use('/cam', createProxyMiddleware({
-  target: 'http://192.168.192.155',
-  changeOrigin: true,
-  secure: false,
-  ws: true
-}));
+app.use(
+  '/cam',                           // ← LOCAL route path!
+  createProxyMiddleware({
+    target: 'http://192.168.192.155', // ← the *target*, not the mount point
+    changeOrigin: true,
+    secure: false,
+    ws: true
+  })
+);
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
