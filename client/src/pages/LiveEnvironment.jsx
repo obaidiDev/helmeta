@@ -1,3 +1,4 @@
+// src/pages/LiveEnvironment.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import envSocket from '../envSocket';
@@ -14,18 +15,70 @@ const DataCard = ({ label, value, extraClass = '' }) => (
 
 const LiveEnvironment = () => {
   const { workerId } = useParams();
-
-  // 1. Keep your old environmentData for non-vitals
   const [environmentData, setEnvironmentData] = useState(null);
-  // 2. New state just for vitals
   const [vitals, setVitals] = useState({ heartBeat: null, respiratoryRate: null });
-
   const [useCamera, setUseCamera] = useState(true);
 
-  const getColor = v =>
-    v > 80 ? 'bg-red-100'
-    : v > 50 ? 'bg-yellow-100'
-    : 'bg-green-100';
+  // generic color helper per metric
+  const getCardColor = (label, raw) => {
+    const v = parseFloat(raw);
+    if (isNaN(v)) return ''; // non-numeric
+
+    switch (label) {
+      case 'H2S Level':
+        return v > 3    ? 'bg-red-100'
+             : v > 1    ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'Heart Beat':
+        return v > 100 || v < 50 ? 'bg-red-100'
+             : v > 90 || v < 60  ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'Respiratory Rate':
+        return v > 100 || v < 60   ? 'bg-red-100'
+             : v < 80  ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'Speed':
+        return v > 5    ? 'bg-red-100'
+             : v > 2    ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'CO2':
+        return v > 1000 ? 'bg-red-100'
+             : v > 600  ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'VOC':
+        return v > 1    ? 'bg-red-100'
+             : v > 0.5  ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'CH2O':
+        return v > 0.1  ? 'bg-red-100'
+             : v > 0.05 ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'Humidity':
+        return v > 70   ? 'bg-red-100'
+             : v > 40   ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'Temperature':
+        return v > 30   ? 'bg-red-100'
+             : v > 20   ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      case 'PM2.5':
+        return v > 35   ? 'bg-red-100'
+             : v > 12   ? 'bg-yellow-100'
+                       : 'bg-green-100';
+
+      default:
+        return '';
+    }
+  };
 
   // Socket-IO subscription
   useEffect(() => {
@@ -33,16 +86,10 @@ const LiveEnvironment = () => {
     envSocket.connect();
     envSocket.emit('joinRoom', workerId);
 
-    // 3. Split your listener so it:
-    //    a) updates vitals state from the socket payload
-    //    b) (optionally) merges any other incoming fields into environmentData
     envSocket.on('environmentUpdate', data => {
       const { heartBeat, respiratoryRate, ...rest } = data;
       setVitals({ heartBeat, respiratoryRate });
-      setEnvironmentData(prev => ({
-        ...prev,
-        ...rest
-      }));
+      setEnvironmentData(prev => ({ ...prev, ...rest }));
     });
 
     return () => {
@@ -51,13 +98,12 @@ const LiveEnvironment = () => {
     };
   }, [workerId]);
 
-  // Initial fetch for the “static” environment metrics
+  // Initial fetch
   useEffect(() => {
     if (workerId && !environmentData) {
       fetch(`/api/environment/${workerId}`)
         .then(r => r.json())
         .then(data => {
-          // seed both the non-vitals and the vitals on first load
           const { heartBeat, respiratoryRate, ...rest } = data;
           setVitals({ heartBeat, respiratoryRate });
           setEnvironmentData(rest);
@@ -69,29 +115,61 @@ const LiveEnvironment = () => {
     return <div className="p-4">Loading environment data for {workerId}…</div>;
   }
 
-  // 4. Render your two vitals cards from the `vitals` state
+  // build metrics arrays, compute color on the fly
   const leftMetrics = [
+    {
+      label: 'H2S Level',
+      value: environmentData.h2s_voltage,
+      color: getCardColor('H2S Level', environmentData.h2s_voltage)
+    },
     {
       label: 'Heart Beat',
       value: vitals.heartBeat != null ? `${vitals.heartBeat} BPM` : '–',
-      color: getColor(vitals.heartBeat)
+      color: getCardColor('Heart Beat', vitals.heartBeat)
     },
     {
       label: 'Respiratory Rate',
       value: vitals.respiratoryRate != null ? `${vitals.respiratoryRate} /min` : '–',
-      color: getColor(vitals.spo2)
+      color: getCardColor('Respiratory Rate', vitals.respiratoryRate)
     },
-    { label: 'Personal Risk Level', value: environmentData.personalRiskLevel, color: '' },
-    { label: 'Region Risk Level', value: environmentData.areaRiskLevel, color: '' },
-    { label: 'CO2', value: `${environmentData.co2} ppm`, color: '' },
+    {
+      label: 'Speed',
+      value: environmentData.speed,
+      color: getCardColor('Speed', environmentData.speed)
+    },
+    {
+      label: 'CO2',
+      value: `${environmentData.co2} ppm`,
+      color: getCardColor('CO2', environmentData.co2)
+    },
   ];
 
   const rightMetrics = [
-    { label: 'VOC', value: `${environmentData.voc}`, color: '' },
-    { label: 'CH2O', value: `${environmentData.ch2o} mg/m³`, color: '' },
-    { label: 'Humidity', value: `${environmentData.humidity}%`, color: '' },
-    { label: 'Temperature', value: `${environmentData.temperature}°C`, color: '' },
-    { label: 'PM2.5', value: `${environmentData.pm25} μg/m³`, color: '' },
+    {
+      label: 'VOC',
+      value: `${environmentData.voc}`,
+      color: getCardColor('VOC', environmentData.voc)
+    },
+    {
+      label: 'CH2O',
+      value: `${environmentData.ch2o} mg/m³`,
+      color: getCardColor('CH2O', environmentData.ch2o)
+    },
+    {
+      label: 'Humidity',
+      value: `${environmentData.humidity}%`,
+      color: getCardColor('Humidity', environmentData.humidity)
+    },
+    {
+      label: 'Temperature',
+      value: `${environmentData.temperature}°C`,
+      color: getCardColor('Temperature', environmentData.temperature)
+    },
+    {
+      label: 'PM2.5',
+      value: `${environmentData.pm25} μg/m³`,
+      color: getCardColor('PM2.5', environmentData.pm25)
+    },
   ];
 
   return (
@@ -99,7 +177,7 @@ const LiveEnvironment = () => {
       <img src="/cam" alt="Camera Stream"/>
 
       <div className="absolute top-4 left-4 z-20">
-        {/* ...toggle code unchanged... */}
+        {/* toggle code unchanged… */}
       </div>
 
       <div className="absolute inset-0 pointer-events-none z-10 flex justify-between">
