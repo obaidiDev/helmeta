@@ -178,16 +178,8 @@ const LiveEnvironment = () => {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-white">
-        {<iframe
-         src="/cam"
-         title="Camera Stream"
-         className={`
-           w-full h-full transition-opacity duration-300
-           ${useCameraBackground ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
-         `}/>}
-  
-      {/* Toggle Switch */}
-      <div className="p-4">
+            {/* Toggle Switch */}
+            <div className="p-4">
         <label htmlFor="toggleCamera" className="flex items-center cursor-pointer">
           <div className="relative">
             <input
@@ -209,6 +201,13 @@ const LiveEnvironment = () => {
           </span>
         </label>
       </div>
+        {<iframe
+         src="/cam"
+         title="Camera Stream"
+         className={`
+           w-full h-full transition-opacity duration-300
+           ${useCameraBackground ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}
+         `}/>}
 
       <div className="absolute inset-0 pointer-events-none z-10 flex justify-between">
         <div className="m-4 space-y-2 pointer-events-auto mt-20">
