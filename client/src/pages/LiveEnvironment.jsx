@@ -202,7 +202,7 @@ const LiveEnvironment = () => {
         </label>
       </div>
         {<iframe
-         src="/cam"
+         src="https://6a38-163-116-191-40.ngrok-free.app/stream"
          title="Camera Stream"
          className={`
            w-full h-full transition-opacity duration-300

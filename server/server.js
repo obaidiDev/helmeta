@@ -2,7 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const http = require('http');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+// const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');  // <-- add this clearly
 const { Server } = require('socket.io');
 const WebSocket = require('ws');
@@ -191,15 +191,15 @@ app.post('/api/vitals', (req, res) => {
   res.status(200).json({ message: 'Vitals updated.' });
 });
 
-app.use(
-  '/cam',                           // ← LOCAL route path!
-  createProxyMiddleware({
-    target: 'http://192.168.192.155', // ← the *target*, not the mount point
-    changeOrigin: true,
-    secure: false,
-    ws: true
-  })
-);
+// app.use(
+//   '/cam',                           // ← LOCAL route path!
+//   createProxyMiddleware({
+//     target: 'http://192.168.192.155', // ← the *target*, not the mount point
+//     changeOrigin: true,
+//     secure: false,
+//     ws: true
+//   })
+// );
 app.use(express.static(path.join(__dirname, '../client/dist')));
 app.get('/*name', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
