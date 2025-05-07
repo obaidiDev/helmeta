@@ -247,30 +247,30 @@ wss.on('connection', (ws) => {
 });
 
 // --- Separate WebSocket Server for UWB tag (raw ws) ---
-const wssUwb = new WebSocket.Server({ server, path: '/uwb' });
+// const wssUwb = new WebSocket.Server({ server, path: '/uwb' });
 
-wssUwb.on('connection', ws => {
-  console.log('✅ UWB tag connected via raw WebSocket (/uwb)');
+// wssUwb.on('connection', ws => {
+//   console.log('✅ UWB tag connected via raw WebSocket (/uwb)');
 
-  ws.on('message', (message) => {
-    const msgStr = message.toString();
-    console.log('📨 Data from UWB tag:', msgStr);
+//   ws.on('message', (message) => {
+//     const msgStr = message.toString();
+//     console.log('📨 Data from UWB tag:', msgStr);
 
-    try {
-      const data = JSON.parse(msgStr);
-      // data should be: { id, name, riskLevel, position: { x, y } }
+//     try {
+//       const data = JSON.parse(msgStr);
+//       // data should be: { id, name, riskLevel, position: { x, y } }
 
-      // Broadcast out to your IndoorMap clients
-      io.emit('positionUpdate', data);
-    } catch (err) {
-      console.error('❌ Invalid JSON on /uwb:', msgStr);
-    }
-  });
+//       // Broadcast out to your IndoorMap clients
+//       io.emit('positionUpdate', data);
+//     } catch (err) {
+//       console.error('❌ Invalid JSON on /uwb:', msgStr);
+//     }
+//   });
 
-  ws.on('close', () => {
-    console.log('❌ UWB tag disconnected from /uwb');
-  });
-});
+//   ws.on('close', () => {
+//     console.log('❌ UWB tag disconnected from /uwb');
+//   });
+// });
 
 
 // // --- Separate WebSocket Server for DW1000 (raw ws) ---
