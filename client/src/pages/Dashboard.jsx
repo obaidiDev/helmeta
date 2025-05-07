@@ -74,6 +74,20 @@ const Dashboard = () => {
         !(a.title === alertToRemove.title && a.description === alertToRemove.description)
        )
     );
+       fetch('/api/update-alerts', {
+           method: 'DELETE',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({
+             title: alertToRemove.title,
+             description: alertToRemove.description
+           })
+         })
+         .then(res => {
+           if (!res.ok) throw new Error(`Delete failed (${res.status})`);
+           // We’ll get the fresh alerts via socket.io’s 'alertsUpdate' anyway —
+           // no need to call setAlerts here.
+         })
+         .catch(err => console.error('Error deleting alert:', err));
   };
   // const filteredPrediction = predictionAnalysis.filter((pa) =>
   //   pa.targetName.toLowerCase().includes(searchQuery.toLowerCase()) ||

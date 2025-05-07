@@ -131,6 +131,19 @@ app.post('/api/update-alerts', (req, res) => {
   res.status(200).json({ message: "Alerts data updated." });
 });
 
+// DELETE /api/alerts
+app.delete('/api/update-alerts', (req, res) => {
+  const { title, description } = req.body;
+  // remove any alert matching both title+description
+  alerts = alerts.filter(a =>
+    !(a.title === title && a.description === description)
+  );
+  // broadcast the updated list
+  io.emit('alertsUpdate', alerts);
+  res.json({ message: 'Alert deleted.' });
+});
+
+
 
 app.post('/api/update-risk-assessments', (req, res) => {
   req.body.forEach(newItem => {
